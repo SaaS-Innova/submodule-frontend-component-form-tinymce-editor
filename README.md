@@ -6,11 +6,20 @@
    **_postinstall.js_**
 
    ```
-   import fse from 'fs-extra';
-   import path from 'path';
-   const topDir = import.meta.dirname;
-   fse.emptyDirSync(path.join(topDir, 'public', 'tinymce'));
-   fse.copySync(path.join(topDir, 'node_modules', 'tinymce'), path.join(topDir, 'public', 'tinymce'), { overwrite: true });
+   const path = require('path');
+   const fse = require('fs-extra');
+   const topDir = path.dirname(require.main.filename);
+
+   async function copyTinyMCE() {
+    try {
+        await fse.emptyDir(path.join(topDir, 'public', 'tinymce'));
+        await fse.copy(path.join(topDir, 'node_modules', 'tinymce'), path.join(topDir, 'public', 'tinymce'), { overwrite: true });
+        console.log('TinyMCE files copied successfully.');
+      } catch (err) {
+        console.error('Error copying TinyMCE files:', err);
+      }
+   }
+      copyTinyMCE();
    ```
 
    **_package.json_**
@@ -36,4 +45,14 @@
 
    ```
    npm run postinstall
+   ```
+
+4. Add this into css.
+
+   ```
+   .tox.tox-tinymce-aux,
+   .tox.tox-tinymce-aux .tox-dialog {
+      z-index: 2147483647 !important;
+   }
+
    ```

@@ -11,20 +11,10 @@ export const TinymceEditor = (props: IFormProps) => {
   const { attribute, form, fieldType } = props;
   const { label } = form[attribute];
   const { required } = form[attribute].rules;
-  const [editorValue, setEditorValue] = useState<string | null>("");
   const {
     formState: { errors, defaultValues },
     control,
   } = useFormContext();
-
-  /*
-   * This useEffect is used to set the initial value of the editor
-   * based on the default value provided in the form
-   */
-  useEffect(() => {
-    const initialValue = defaultValues?.[attribute] ?? "";
-    setEditorValue(initialValue);
-  }, [attribute, defaultValues]);
 
   const handleFilePicker = (
     cb: (url: string, meta: { title: string }) => void,
@@ -91,15 +81,16 @@ export const TinymceEditor = (props: IFormProps) => {
           name={attribute}
           control={control}
           rules={inputValidator(form[attribute].rules, label)}
+          defaultValue={defaultValues?.[attribute] ?? ""}
           render={({ field }) => (
             <Editor
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
               onInit={(_evt, editor) => (editorRef.current = editor)}
-              initialValue={editorValue!}
+              value={field.value}
               init={{
                 menubar: false,
-                plugins: "a11ychecker autolink  emoticons image link  lists",
+                plugins: "autolink  emoticons image link  lists",
                 toolbar:
                   "undo redo | styles | bold italic forecolor backcolor  | link image emoticons | align bullist numlist | removeformat",
                 toolbar_sticky: true,

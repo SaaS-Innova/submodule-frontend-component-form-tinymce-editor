@@ -5,10 +5,11 @@ import { IFormProps } from "../formInterface/forms.model";
 import { inputValidator } from "../../../../library/utilities/helperFunction";
 import { IFormFieldType } from "../../../../library/utilities/constant";
 import { FormFieldError } from "../formFieldError/FormFieldError";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 export const TinymceEditor = (props: IFormProps) => {
   const editorRef = useRef(null) as any;
-  const { attribute, form, fieldType } = props;
+  const { attribute, form, fieldType, loading = false } = props;
   const { label } = form[attribute];
   const { required } = form[attribute].rules;
   const {
@@ -77,38 +78,42 @@ export const TinymceEditor = (props: IFormProps) => {
     <div className={fieldClassName}>
       {fieldType !== IFormFieldType.NO_LABEL && labelElement}
       <div className={divClassName}>
-        <Controller
-          name={attribute}
-          control={control}
-          rules={inputValidator(form[attribute].rules, label)}
-          defaultValue={defaultValues?.[attribute] ?? ""}
-          render={({ field }) => (
-            <Editor
-              tinymceScriptSrc="/tinymce/tinymce.min.js"
-              licenseKey="gpl"
-              onInit={(_evt, editor) => (editorRef.current = editor)}
-              value={field.value}
-              init={{
-                menubar: false,
-                plugins: "autolink  emoticons image link  lists",
-                toolbar:
-                  "undo redo | styles | bold italic forecolor backcolor  | link image emoticons | align bullist numlist | removeformat",
-                toolbar_sticky: true,
-                elementpath: false,
-                visual: false,
-                link_target_list: false,
-                images_file_types: "jpeg,jpg,png,gif",
-                content_style: `body { font-family:Helvetica,Arial,sans-serif; font-size:14px }`,
-                file_picker_types: "image",
-                automatic_uploads: true,
-                file_picker_callback: handleFilePicker,
-                image_title: true,
-                object_resizing: "img",
-              }}
-              onEditorChange={field.onChange}
-            />
-          )}
-        />
+        {loading ? (
+          <ProgressSpinner className="loading-spinner-small flex justify-content-center" />
+        ) : (
+          <Controller
+            name={attribute}
+            control={control}
+            rules={inputValidator(form[attribute].rules, label)}
+            defaultValue={defaultValues?.[attribute] ?? ""}
+            render={({ field }) => (
+              <Editor
+                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                licenseKey="gpl"
+                onInit={(_evt, editor) => (editorRef.current = editor)}
+                value={field.value}
+                init={{
+                  menubar: false,
+                  plugins: "autolink  emoticons image link  lists",
+                  toolbar:
+                    "undo redo | styles | bold italic forecolor backcolor  | link image emoticons | align bullist numlist | removeformat",
+                  toolbar_sticky: true,
+                  elementpath: false,
+                  visual: false,
+                  link_target_list: false,
+                  images_file_types: "jpeg,jpg,png,gif",
+                  content_style: `body { font-family:Helvetica,Arial,sans-serif; font-size:14px }`,
+                  file_picker_types: "image",
+                  automatic_uploads: true,
+                  file_picker_callback: handleFilePicker,
+                  image_title: true,
+                  object_resizing: "img",
+                }}
+                onEditorChange={field.onChange}
+              />
+            )}
+          />
+        )}
         <FormFieldError data={{ errors, name: attribute }} />
       </div>
     </div>

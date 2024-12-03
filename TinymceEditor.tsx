@@ -7,6 +7,7 @@ import { IFormFieldType } from "../../../../library/utilities/constant";
 import { FormFieldError } from "../formFieldError/FormFieldError";
 
 const validImageTypes = ["jpeg", "png", "jpg", "gif"];
+
 export const TinymceEditor = (props: IFormProps) => {
   const editorRef = useRef(null) as any;
   const { attribute, form, fieldType } = props;
@@ -16,9 +17,19 @@ export const TinymceEditor = (props: IFormProps) => {
     formState: { errors, defaultValues },
     control,
   } = useFormContext();
-  const validAccess = validImageTypes.map(
-    (validImageTypes) => `image/${validImageTypes}`
-  );
+
+  const validAccess = validImageTypes.map((type) => `image/${type}`);
+  const contentStyle = `
+    body { 
+      font-family: Helvetica, Arial, sans-serif; 
+      font-size: 14px; 
+      line-height: 1.5; 
+    } 
+    p, h1, h2, h3, h4, h5, h6 { 
+      margin: 0px; 
+    }
+  `;
+  const styleTag = `<style>${contentStyle}</style>`;
 
   const handleFilePicker = (
     cb: (url: string, meta: { title: string }) => void,
@@ -95,28 +106,58 @@ export const TinymceEditor = (props: IFormProps) => {
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
               onInit={(_evt, editor) => {
-                console.log("editor");
                 editorRef.current = editor;
               }}
               value={field.value}
               init={{
-                menubar: false,
-                plugins: "autolink  emoticons image link  lists",
+                menubar: true,
+                plugins: [
+                  "advlist",
+                  "autolink",
+                  "autosave",
+                  "charmap",
+                  "codesample",
+                  "directionality",
+                  "emoticons",
+                  "fullscreen",
+                  "help",
+                  "image",
+                  "insertdatetime",
+                  "link",
+                  "lists",
+                  "nonbreaking",
+                  "preview",
+                  "quickbars",
+                  "searchreplace",
+                  "table",
+                  "wordcount",
+                ],
                 toolbar:
-                  "undo redo | styles | bold italic forecolor backcolor  | link image emoticons | align bullist numlist | removeformat",
+                  "undo redo | fontfamily styles fontsizeinput lineheight | forecolor backcolor removeformat | bold italic underline strikethrough | formatselect fontselect fontsizeselect | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | charmap emoticons | fullscreen preview print | image link codesample | ltr rtl | table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter | tabledeleterow | tableinsertcolbefore tableinsertcolafter | tabledeletecol | searchreplace | help",
                 toolbar_sticky: true,
                 elementpath: false,
                 visual: false,
                 link_target_list: false,
                 images_file_types: validImageTypes.join(","),
-                content_style: `body { font-family:Helvetica,Arial,sans-serif; font-size:14px }`,
+                content_style: contentStyle,
                 file_picker_types: "image",
                 automatic_uploads: true,
                 file_picker_callback: handleFilePicker,
                 image_title: true,
                 object_resizing: "img",
+                browser_spellcheck: true,
+                setup: (editor) => {
+                  editor.on("PostProcess", function (event) {
+                    if (event.get) {
+                      // Prepend the new style tag
+                      event.content = `${styleTag}\n${event.content}`;
+                    }
+                  });
+                },
               }}
-              onEditorChange={field.onChange}
+              onEditorChange={(content) => {
+                field.onChange(content);
+              }}
             />
           )}
         />

@@ -127,7 +127,6 @@ export const TinymceEditor = (props: IFormProps) => {
                   "lists",
                   "nonbreaking",
                   "preview",
-                  "quickbars",
                   "searchreplace",
                   "table",
                   "wordcount",

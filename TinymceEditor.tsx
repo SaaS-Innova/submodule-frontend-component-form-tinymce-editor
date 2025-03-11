@@ -146,6 +146,67 @@ export const TinymceEditor = (props: IFormProps) => {
                 object_resizing: "img",
                 browser_spellcheck: true,
                 setup: (editor) => {
+                  // Handle Tab key for inserting spaces (4 non-breaking spaces "    ")
+                  editor.on("keydown", function (event) {
+                    if (event.key === "Tab") {
+                      event.preventDefault();
+                      editor.execCommand("mceInsertContent", false, "    ");
+                    }
+                  });
+
+                  // Capitalize first letter of each sentence
+                  editor.on("keyup", function (event) {
+                    if (event.key === " " || event.key === "Enter") {
+                      // Save the current selection details
+                      const sel: any = editor.selection.getSel();
+                      const range = sel?.getRangeAt(0);
+                      const savedNode = range?.startContainer;
+                      const savedOffset: any = range?.startOffset;
+
+                      const body = editor.getBody();
+                      const walker = document.createTreeWalker(
+                        body,
+                        NodeFilter.SHOW_TEXT
+                      );
+                      let node;
+                      while ((node = walker.nextNode())) {
+                        const text = node.nodeValue;
+                        if (!text) continue;
+
+                        // Split text into sentences based on punctuation and whitespace
+                        const sentences = text.split(/([.!?]\s+)/g);
+                        const capitalizedSentences = sentences.map(
+                          (sentence, index) => {
+                            // Capitalize if at the start or if the previous token ends with punctuation+whitespace.
+                            if (
+                              index === 0 ||
+                              /[.!?]\s+$/.test(sentences[index - 1])
+                            ) {
+                              return (
+                                sentence.charAt(0).toUpperCase() +
+                                sentence.slice(1)
+                              );
+                            }
+                            return sentence;
+                          }
+                        );
+                        const newText = capitalizedSentences.join("");
+                        if (text !== newText) {
+                          node.nodeValue = newText;
+                        }
+                      }
+
+                      // Restore the saved selection to keep focus and caret position.
+                      if (savedNode) {
+                        const newRange = document.createRange();
+                        newRange.setStart(savedNode, savedOffset);
+                        newRange.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(newRange);
+                      }
+                    }
+                  });
+
                   editor.on("PostProcess", function (event) {
                     if (event.get) {
                       // Prepend the new style tag
